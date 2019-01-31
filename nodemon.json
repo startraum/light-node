@@ -1,0 +1,10 @@
+{
+  "watch": [
+    "src/**/*.ts",
+    "package.json",
+    "package-lock.json"
+  ],
+  "execMap": {
+    "ts": "node_modules/.bin/ts-node --compiler-options '{\"module\":\"commonjs\",\"isolatedModules\":false}'"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "light-node",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "nodemon src/index.ts",
+    "build": "rm -r ./dist; tsc",
+    "docker-build": "npm run build && docker build -t startraum/light-node:latest .",
+    "docker-push": "docker push startraum/light-node:latest",
+    "start": "NODE_ENV=production node dist/index.js",
+    "lint": "tslint src"
+  },
+  "devDependencies": {
+    "@types/cote": "^0.17.0",
+    "@types/faker": "^4.1.5",
+    "@types/node": "10.12.18",
+    "nodemon": "^1.18.9",
+    "ts-node": "^8.0.2",
+    "tslint": "^5.12.1",
+    "typescript": "^3.2.4"
+  },
+  "dependencies": {
+    "cote": "^0.19.0",
+    "faker": "^4.1.0"
+  }
+}
