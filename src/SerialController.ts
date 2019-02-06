@@ -1,4 +1,6 @@
+// @ts-ignore
 import { init } from 'raspi'
+// @ts-ignore
 import { Serial } from 'raspi-serial'
 
 interface Mode {

@@ -13,7 +13,7 @@
       "no-this-assignment": [true, {
         "allow-destructuring": true
       }],
-      "no-implicit-dependencies": [true, "dev"],
+      "no-implicit-dependencies": [true, "optional"],
       "no-angle-bracket-type-assertion": false,
       "array-type": false,
       "ordered-imports": false,
