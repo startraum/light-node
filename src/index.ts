@@ -43,7 +43,7 @@ subscriber.on('update', ({ id, update }: { id: string, update: LightUpdate }) =>
   pushThrottled({
     hue: light.hue,
     lightness: light.lightness,
-    intensity: light.intensity,
+    intensity: light.power ? light.intensity : 0,
   })
   publishLight(false).catch(e => console.error(e))
 })
