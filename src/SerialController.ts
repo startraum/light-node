@@ -49,13 +49,18 @@ export class SerialController {
   public serial: Serial | undefined
 
   private _openPromise: Promise<void> | undefined
+  private _sendPromise: Promise<any> | undefined
 
   public async send<T>(mode: Mode): Promise<T> {
     await this.open()
     const { payload, getPayload, receiveLength } = mode
     const s = this.serial as Serial
 
-    return new Promise(resolve => {
+    if (this._sendPromise) {
+      await this._sendPromise
+      return this.send(mode)
+    }
+    this._sendPromise = new Promise(resolve => {
       if (receiveLength > 0) {
         let received: Buffer | undefined
         const receive = (data: Buffer) => {
@@ -74,7 +79,11 @@ export class SerialController {
       s.write(payload)
 
       if (receiveLength <= 0) resolve()
+    }).then(res => {
+      this._sendPromise = undefined
+      return res
     })
+    return this._sendPromise
   }
 
   private open() {
