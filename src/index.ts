@@ -12,7 +12,23 @@ const light = {
   lightness: 0,
   power: false,
   intensity: 50,
-  lastColors: [],
+  colors: [{
+    hue: 0,
+    intensity: 100,
+    lightness: 50,
+  }, {
+    hue: 50,
+    intensity: 100,
+    lightness: 60,
+  }, {
+    hue: 150,
+    intensity: 75,
+    lightness: 80,
+  }, {
+    hue: 327.39,
+    lightness: 50,
+    intensity: 100,
+  }],
 }
 
 const subscriber = new Subscriber({ name: 'lightsBroadcast' })
