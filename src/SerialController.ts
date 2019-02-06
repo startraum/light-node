@@ -88,7 +88,6 @@ export class SerialController {
         init(() => {
           const s = this.serial as Serial
           s.open(() => {
-            s.on('data', data => console.log('data', data))
             setTimeout(() => {
               console.log('opened serial connection to arduino')
               resolve()
