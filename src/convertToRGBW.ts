@@ -32,9 +32,9 @@ const convertToRGBW = ({ red, green, blue }: { red: number, green: number, blue:
 
 const convertToRGB = ({ red, green, blue, white }: { red: number, green: number, blue: number, white: number }) => {
   return {
-    red: Math.min(255, red + white),
-    green: Math.min(255, green + white),
-    blue: Math.min(255, blue + white),
+    red: Math.min(255, (red || 0) + (white || 0)),
+    green: Math.min(255, (green || 0) + (white || 0)),
+    blue: Math.min(255, (blue || 0) + (white || 0)),
   }
 }
 

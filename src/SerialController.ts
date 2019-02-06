@@ -15,21 +15,27 @@ export const getData = (): Mode => ({
   receiveLength: 4,
   payload: Buffer.from([0x000000]),
   getPayload: data => {
-    return {
+    const rgbw = {
       red: data[0],
       green: data[1],
       blue: data[2],
       white: data[3],
     }
+    console.log(rgbw)
+    return rgbw
   },
 })
 
-export const setStatic = ({ red, green, blue, white }: { red: number, green: number, blue: number, white: number }): Mode => ({
-  sendLength: 4,
-  receiveLength: 0,
-  payload: Buffer.from([0x000001, red, green, blue, white]),
-  getPayload: () => null,
-})
+export const setStatic = ({ red, green, blue, white }: { red: number, green: number, blue: number, white: number }): Mode => {
+  const data = [0x000001, red, green, blue, white]
+  console.log('setStatic', data)
+  return {
+    sendLength: 4,
+    receiveLength: 0,
+    payload: Buffer.from(data),
+    getPayload: () => null,
+  }
+}
 
 export const animation = (): Mode => ({
   sendLength: 0,
@@ -46,16 +52,28 @@ export class SerialController {
 
   public async send<T>(mode: Mode): Promise<T> {
     await this.open()
-    const { payload, getPayload } = mode
+    const { payload, getPayload, receiveLength } = mode
     const s = this.serial as Serial
 
     return new Promise(resolve => {
-      const receive = (data: Buffer) => {
-        resolve(getPayload(data))
+      if (receiveLength > 0) {
+        let received: Buffer | undefined
+        const receive = (data: Buffer) => {
+          received = received ? Buffer.concat([received, data]) : data
+          if (received.length < receiveLength) {
+            return
+          }
+          s.removeListener('data', receive)
+          console.log('receive', received)
+          resolve(getPayload(received as Buffer))
+        }
+        s.addListener('data', receive)
       }
-      s.once('data', receive)
 
+      console.log('send', payload)
       s.write(payload)
+
+      if (receiveLength <= 0) resolve()
     })
   }
 
@@ -67,7 +85,16 @@ export class SerialController {
       })
 
       this._openPromise = new Promise(resolve => {
-        init(() => (this.serial as Serial).open(() => resolve))
+        init(() => {
+          const s = this.serial as Serial
+          s.open(() => {
+            s.on('data', data => console.log('data', data))
+            setTimeout(() => {
+              console.log('opened serial connection to arduino')
+              resolve()
+            }, 3000)
+          })
+        })
       })
     }
     return this._openPromise
