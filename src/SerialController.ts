@@ -3,6 +3,11 @@ import { init } from 'raspi'
 // @ts-ignore
 import { Serial } from 'raspi-serial'
 
+function randomId() {
+  const id = Math.floor(Math.random() * 1e17).toString(16)
+  return id.toString()
+}
+
 interface Mode {
   sendLength: number
   receiveLength: number
@@ -49,41 +54,60 @@ export class SerialController {
   public serial: Serial | undefined
 
   private _openPromise: Promise<void> | undefined
-  private _sendPromise: Promise<any> | undefined
+  private sendQueue: { id: string, mode: Mode, resolve: (data?: any) => void }[] = []
+  private sending = false
 
   public async send<T>(mode: Mode): Promise<T> {
     await this.open()
-    const { payload, getPayload, receiveLength } = mode
-    const s = this.serial as Serial
 
-    if (this._sendPromise) {
-      await this._sendPromise
-      return this.send(mode)
-    }
-    this._sendPromise = new Promise(resolve => {
-      if (receiveLength > 0) {
-        let received: Buffer | undefined
-        const receive = (data: Buffer) => {
-          received = received ? Buffer.concat([received, data]) : data
-          if (received.length < receiveLength) {
-            return
-          }
-          s.removeListener('data', receive)
-          console.log('receive', received)
-          resolve(getPayload(received as Buffer))
-        }
-        s.addListener('data', receive)
-      }
-
-      console.log('send', payload)
-      s.write(payload)
-
-      if (receiveLength <= 0) resolve()
-    }).then(res => {
-      this._sendPromise = undefined
-      return res
+    return new Promise(resolve => {
+      const id = randomId()
+      console.log('queued', id)
+      this.sendQueue.push({ id, mode, resolve })
+      this.startSending()
     })
-    return this._sendPromise
+  }
+
+  private async startSending() {
+    if (this.sending) return
+    if (this.sendQueue.length <= 0) return
+    this.sending = true
+
+    let item: { id: string, mode: Mode, resolve: (data?: any) => void } | undefined
+    do {
+      item = this.sendQueue.shift()
+      if (item) {
+        await new Promise(resolveItem => {
+          const { mode, resolve, id } = item as { id: string, mode: Mode, resolve: (data?: any) => void }
+          const { payload, getPayload, receiveLength } = mode
+          const s = this.serial as Serial
+
+          if (receiveLength > 0) {
+            let received: Buffer | undefined
+            const receive = (data: Buffer) => {
+              received = received ? Buffer.concat([received, data]) : data
+              if (received.length < receiveLength) {
+                return
+              }
+              s.removeListener('data', receive)
+              console.log('receive', id, received)
+              resolveItem()
+              resolve(getPayload(received as Buffer))
+            }
+            s.addListener('data', receive)
+          }
+
+          console.log('send', id, payload)
+          s.write(payload)
+
+          if (receiveLength <= 0) {
+            resolveItem()
+            resolve()
+          }
+        })
+      }
+    } while (item)
+    this.sending = false
   }
 
   private open() {
