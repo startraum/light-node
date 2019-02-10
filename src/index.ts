@@ -12,6 +12,7 @@ const light = {
   lightness: 0,
   power: false,
   intensity: 50,
+  animation: false,
   colors: [{
     hue: 0,
     intensity: 100,
@@ -60,6 +61,7 @@ subscriber.on('update', ({ id, update }: { id: string, update: LightUpdate }) =>
     hue: light.hue,
     lightness: light.lightness,
     intensity: light.power ? light.intensity : 0,
+    animation: light.animation,
   })
   publishLight(false).catch(e => console.error(e))
 })

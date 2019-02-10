@@ -31,11 +31,10 @@ export const getData = (): Mode => ({
   },
 })
 
-export const setStatic = ({ red, green, blue, white }: { red: number, green: number, blue: number, white: number }): Mode => {
-  const data = [0x000001, red, green, blue, white]
-  console.log('setStatic', data)
+export const setStatic = ({ red, green, blue, white, animate }: { red: number, green: number, blue: number, white: number, animate: boolean }): Mode => {
+  const data = [0x000001, red, green, blue, white, animate ? 1 : 0]
   return {
-    sendLength: 4,
+    sendLength: 5,
     receiveLength: 0,
     payload: Buffer.from(data),
     getPayload: () => null,
@@ -62,7 +61,6 @@ export class SerialController {
 
     return new Promise(resolve => {
       const id = randomId()
-      console.log('queued', id)
       this.sendQueue.push({ id, mode, resolve })
       this.startSending()
     })
