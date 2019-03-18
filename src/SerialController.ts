@@ -26,7 +26,6 @@ export const getData = (): Mode => ({
       blue: data[2],
       white: data[3],
     }
-    console.log(rgbw)
     return rgbw
   },
 })
