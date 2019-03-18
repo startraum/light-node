@@ -13,6 +13,7 @@ const light = {
   power: false,
   intensity: 50,
   animation: false,
+  locked: false,
   colors: [{
     hue: 0,
     intensity: 100,
