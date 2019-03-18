@@ -35,6 +35,11 @@ const light = {
 const subscriber = new Subscriber({ name: 'lightsBroadcast' })
 const publisher = new Publisher({ name: 'lightsBroadcast' })
 
+const logAndCrash = (error: Error) => {
+  console.error(error)
+  process.exit(1)
+}
+
 const publishLight = async (pull = true) => {
   if (pull) {
     const update = await controller.pull()
@@ -48,7 +53,7 @@ const publishLight = async (pull = true) => {
   publisher.publish('light', { light, time: new Date() })
 }
 
-const pushThrottled = throttle(l => controller.push(l).catch(e => console.error(e)), parseInt(process.env.LIGHT_THROTTLE || '50', 10))
+const pushThrottled = throttle(l => controller.push(l), parseInt(process.env.LIGHT_THROTTLE || '50', 10))
 
 // @ts-ignore
 subscriber.on('update', ({ id, update }: { id: string, update: LightUpdate }) => {
@@ -62,9 +67,9 @@ subscriber.on('update', ({ id, update }: { id: string, update: LightUpdate }) =>
     lightness: light.lightness,
     intensity: light.power ? light.intensity : 0,
     animation: light.animation,
-  })
-  publishLight(false).catch(e => console.error(e))
+  }).catch(logAndCrash)
+  publishLight(false).catch(logAndCrash)
 })
 
 setInterval(publishLight, parseInt(process.env.UPDATE_INTERVAL || '30000', 10))
-publishLight().catch(e => console.error(e))
+publishLight().catch(logAndCrash)

@@ -59,9 +59,19 @@ export class SerialController {
   public async send<T>(mode: Mode): Promise<T> {
     await this.open()
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const id = randomId()
-      this.sendQueue.push({ id, mode, resolve })
+      const abortTimeout = setTimeout(() => {
+        reject()
+      }, parseInt(process.env.ABORT_TIMEOUT || '1000', 10))
+      this.sendQueue.push({
+        id,
+        mode,
+        resolve: () => {
+          clearTimeout(abortTimeout)
+          resolve()
+        },
+      })
       this.startSending()
     })
   }
