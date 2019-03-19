@@ -66,9 +66,9 @@ export class SerialController {
       this.sendQueue.push({
         id,
         mode,
-        resolve: () => {
+        resolve: (...args) => {
           clearTimeout(abortTimeout)
-          resolve()
+          resolve(...args)
         },
       })
       this.startSending()
