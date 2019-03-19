@@ -1,4 +1,4 @@
-FROM hypriot/rpi-node:latest
+FROM arm32v7/node
 
 EXPOSE 3000
 
