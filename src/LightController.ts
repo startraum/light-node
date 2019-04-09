@@ -8,7 +8,20 @@ export interface LightUpdate {
   lightness?: number
   power?: boolean
   intensity?: number
+  animation?: boolean
+  locked?: boolean
+}
+
+export interface Light {
+  id: string
+  name: string
+  hue: number
+  lightness: number
+  power: boolean
+  intensity: number
   animation: boolean
+  locked: boolean
+  colors: { hue: number, intensity: number, lightness: number }[]
 }
 
 interface Color { red: number, green: number, blue: number, white: number }

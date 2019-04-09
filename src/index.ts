@@ -1,11 +1,11 @@
 import config from 'console-stamp'
 import { throttle } from 'lodash'
-import { Publisher, Subscriber } from 'cote'
-import controller, { LightUpdate } from './LightController'
+import { subscribe, publish } from './redis'
+import controller, { Light, LightUpdate } from './LightController'
 
 config(console)
 
-const light = {
+const light: Light = {
   id: process.env.LIGHT_ID || 'default',
   name: process.env.LIGHT_NAME || 'default',
   hue: 0,
@@ -33,9 +33,6 @@ const light = {
   }],
 }
 
-const subscriber = new Subscriber({ name: 'lightsBroadcast' })
-const publisher = new Publisher({ name: 'lightsBroadcast' })
-
 const logAndCrash = (error: Error) => {
   console.error(error)
   process.exit(1)
@@ -44,31 +41,36 @@ const logAndCrash = (error: Error) => {
 const publishLight = async (pull = true) => {
   if (pull) {
     const update = await controller.pull()
-    Object.keys(update).forEach(key => {
-      // @ts-ignore
-      light[key] = update[key]
-    })
+    if (update.hue != null) light.hue = update.hue
+    if (update.lightness != null) light.lightness = update.lightness
+    if (update.power != null) light.power = update.power
+    if (update.intensity != null) light.intensity = update.intensity
+    if (update.animation != null) light.animation = update.animation
+    if (update.locked != null) light.locked = update.locked
     light.power = light.lightness > 0
   }
-  // @ts-ignore
-  publisher.publish('light', { light, time: new Date() })
+  return publish(light)
 }
 
 const pushThrottled = throttle(l => controller.push(l), parseInt(process.env.LIGHT_THROTTLE || '50', 10))
 
-// @ts-ignore
-subscriber.on('update', ({ id, update }: { id: string, update: LightUpdate }) => {
+subscribe(({ id, update }: { id: string, update: LightUpdate }) => {
+  console.log(id, light.id, update)
   if (light.id !== id) return
-  Object.keys(update).forEach(key => {
-    // @ts-ignore
-    light[key] = update[key]
-  })
+  if (update.hue != null) light.hue = update.hue
+  if (update.lightness != null) light.lightness = update.lightness
+  if (update.power != null) light.power = update.power
+  if (update.intensity != null) light.intensity = update.intensity
+  if (update.animation != null) light.animation = update.animation
+  if (update.locked != null) light.locked = update.locked
+  console.log('pushing')
   pushThrottled({
     hue: light.hue,
     lightness: light.lightness,
     intensity: light.power ? light.intensity : 0,
     animation: light.animation,
   }).catch(logAndCrash)
+  console.log('pushing finished')
   publishLight(false).catch(logAndCrash)
 })
 

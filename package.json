@@ -6,16 +6,17 @@
     "build": "rm -r ./dist; tsc",
     "docker-build": "npm run build && docker build -t startraum/light-node:latest .",
     "docker-push": "docker push startraum/light-node:latest",
+    "release": "npm run docker-build && npm run docker-push",
     "start": "NODE_ENV=production node dist/index.js",
     "lint": "tslint src"
   },
   "devDependencies": {
     "@types/color": "^3.0.0",
     "@types/console-stamp": "^0.2.32",
-    "@types/cote": "^0.17.0",
     "@types/faker": "^4.1.5",
     "@types/lodash": "^4.14.120",
     "@types/node": "10.12.18",
+    "@types/redis": "^2.8.12",
     "nodemon": "^1.18.9",
     "ts-node": "^8.0.2",
     "tslint": "^5.12.1",
@@ -24,9 +25,9 @@
   "dependencies": {
     "color": "^3.1.0",
     "console-stamp": "^0.2.7",
-    "cote": "^0.19.0",
     "faker": "^4.1.0",
-    "lodash": "^4.17.11"
+    "lodash": "^4.17.11",
+    "redis": "^2.8.0"
   },
   "optionalDependencies": {
     "raspi": "^6.0.0",
