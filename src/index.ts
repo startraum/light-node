@@ -47,6 +47,7 @@ const publishLight = async (pull = true) => {
     if (update.intensity != null) light.intensity = update.intensity
     if (update.animation != null) light.animation = update.animation
     if (update.locked != null) light.locked = update.locked
+    if (update.colors != null) light.colors = update.colors
     light.power = light.lightness > 0
   }
   return publish(light)

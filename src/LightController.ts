@@ -10,6 +10,7 @@ export interface LightUpdate {
   intensity?: number
   animation?: boolean
   locked?: boolean
+  colors?: { hue: number, intensity: number, lightness: number }[]
 }
 
 export interface Light {
